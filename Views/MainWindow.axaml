@@ -1,0 +1,202 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BluJay_YT_downloader.ViewModels"
+        xmlns:models="using:BluJay_YT_downloader.Models"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="600"
+        Width="850" Height="600"
+        WindowStartupLocation="CenterScreen"
+        x:Class="BluJay_YT_downloader.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="BluJay YT Downloader"
+        Background="#121214">
+
+    <Design.DataContext>
+        <vm:MainViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Header Strip -->
+        <Border Grid.Row="0" Background="#1A1A1E" Padding="20 15" BorderBrush="#2A2A2E" BorderThickness="0 0 0 1">
+            <Grid ColumnDefinitions="*, Auto">
+                <!-- Title & Status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="BluJay YT Downloader" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                    <Border Background="#10B981" CornerRadius="4" Padding="6 2" Margin="12 0 0 0" VerticalAlignment="Center">
+                        <TextBlock Text="Active" FontSize="11" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Action Button -->
+                <Button Grid.Column="1" 
+                        Content="Download All Queue" 
+                        Command="{Binding DownloadAllQueueCommand}"
+                        Background="#10B981" 
+                        Foreground="#FFFFFF" 
+                        FontWeight="Bold" 
+                        FontSize="13"
+                        Padding="16 8" 
+                        CornerRadius="6"
+                        Cursor="Hand">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#059669"/>
+                            <Setter Property="TextBlock.Foreground" Value="#FFFFFF"/>
+                        </Style>
+                    </Button.Styles>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Queue Grid -->
+        <ScrollViewer Grid.Row="1" Padding="15">
+            <ListBox ItemsSource="{Binding Downloads}" Background="Transparent" BorderThickness="0" SelectionMode="Toggle">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Padding" Value="0 4"/>
+                        <Setter Property="Template">
+                            <ControlTemplate>
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                            </ControlTemplate>
+                        </Setter>
+                    </Style>
+                </ListBox.Styles>
+                
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:VideoItem">
+                        <Border Background="#1A1A1E" 
+                                CornerRadius="8" 
+                                Padding="16" 
+                                Margin="0 4 0 4" 
+                                BorderBrush="#2A2A2E" 
+                                BorderThickness="1">
+                            <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                                <!-- Thumbnail -->
+                                <Border Grid.Column="0" CornerRadius="6" ClipToBounds="True" Background="#121214" Width="120" Height="68" VerticalAlignment="Center">
+                                    <Panel>
+                                        <!-- Placeholder when no image -->
+                                        <TextBlock Text="No Image" Foreground="#4B5563" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNull}}"/>
+                                        <!-- Thumbnail Image -->
+                                        <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" 
+                                               IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                    </Panel>
+                                </Border>
+
+                                <!-- Metadata info -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16 0" Spacing="4">
+                                    <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="{Binding Duration, StringFormat='Duration: {0}'}" FontSize="12" Foreground="#9CA3AF"/>
+                                        <TextBlock Text="•" FontSize="12" Foreground="#4B5563"/>
+                                        <TextBlock Text="{Binding DownloadStatus}" FontSize="12" FontWeight="Medium">
+                                            <TextBlock.Styles>
+                                                <Style Selector="TextBlock[Text=Loading]">
+                                                    <Setter Property="Foreground" Value="#3B82F6"/>
+                                                </Style>
+                                                <Style Selector="TextBlock[Text=Queued]">
+                                                    <Setter Property="Foreground" Value="#EAB308"/>
+                                                </Style>
+                                                <Style Selector="TextBlock[Text=Downloading]">
+                                                    <Setter Property="Foreground" Value="#10B981"/>
+                                                </Style>
+                                                <Style Selector="TextBlock[Text=Completed]">
+                                                    <Setter Property="Foreground" Value="#10B981"/>
+                                                </Style>
+                                                <Style Selector="TextBlock[Text=Failed]">
+                                                    <Setter Property="Foreground" Value="#EF4444"/>
+                                                </Style>
+                                            </TextBlock.Styles>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- Error message display if failed -->
+                                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#EF4444" FontSize="11" TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis"
+                                               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                </StackPanel>
+
+                                <!-- Dropdown Format Selector -->
+                                <ComboBox Grid.Column="2" 
+                                          SelectedItem="{Binding TargetFormat}"
+                                          Background="#121214"
+                                          Foreground="#FFFFFF"
+                                          BorderBrush="#2A2A2E"
+                                          BorderThickness="1"
+                                          CornerRadius="6"
+                                          Width="180"
+                                          Margin="0 0 16 0"
+                                          VerticalAlignment="Center">
+                                    <ComboBox.Items>
+                                        <x:String>MP4 (Best)</x:String>
+                                        <x:String>MP4 (1080p)</x:String>
+                                        <x:String>MP4 (720p)</x:String>
+                                        <x:String>MP3 Audio (320kbps)</x:String>
+                                    </ComboBox.Items>
+                                </ComboBox>
+
+                                <!-- Progress & Actions -->
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                    <!-- Progress representation -->
+                                    <Panel Width="100" VerticalAlignment="Center" IsVisible="{Binding IsProcessing}">
+                                        <ProgressBar Value="{Binding Progress}" 
+                                                     Minimum="0" 
+                                                     Maximum="100" 
+                                                     Height="8" 
+                                                     CornerRadius="4" 
+                                                     Foreground="#10B981" 
+                                                     Background="#121214"/>
+                                        <TextBlock Text="{Binding Progress, StringFormat='{}{0:0}%'}" 
+                                                   FontSize="10" 
+                                                   FontWeight="Bold" 
+                                                   Foreground="#FFFFFF" 
+                                                   HorizontalAlignment="Center" 
+                                                   VerticalAlignment="Center" 
+                                                   Margin="0 -14 0 0"/>
+                                    </Panel>
+
+                                    <!-- Download Button (Visible when NOT downloading and not completed) -->
+                                    <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DownloadCommand}" 
+                                            CommandParameter="{Binding}"
+                                            Background="#10B981" 
+                                            Foreground="#FFFFFF"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            ToolTip.Tip="Download video"
+                                            IsVisible="{Binding !IsProcessing}">
+                                        <Button.Styles>
+                                            <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="#059669"/>
+                                            </Style>
+                                        </Button.Styles>
+                                        <Path Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform"/>
+                                    </Button>
+
+                                    <!-- Delete Button -->
+                                    <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteCommand}" 
+                                            CommandParameter="{Binding}"
+                                            Background="#EF4444" 
+                                            Foreground="#FFFFFF"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            ToolTip.Tip="Remove from list">
+                                        <Button.Styles>
+                                            <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="#DC2626"/>
+                                            </Style>
+                                        </Button.Styles>
+                                        <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </ScrollViewer>
+    </Grid>
+</Window>
