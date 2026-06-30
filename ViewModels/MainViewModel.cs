@@ -1,5 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +19,16 @@ public partial class MainViewModel : ViewModelBase
     private readonly ClipboardService _clipboardService;
 
     [ObservableProperty]
-    private ObservableCollection<VideoItem> _downloads = new();
+    private ObservableCollection<VideoItem> _videoQueue = new();
+
+    [ObservableProperty]
+    private ObservableCollection<VideoItem> _playlistQueue = new();
+
+    [ObservableProperty]
+    private int _selectedNavIndex = 0; // 0 = Home, 1 = Videos, 2 = Playlists
+
+    [ObservableProperty]
+    private string _currentTab = "Home";
 
     [ObservableProperty]
     private string _statusMessage = "Listening for YouTube links...";
@@ -31,16 +42,89 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private bool _hasManualUrlText = false;
 
+    // Badges counters (live recalculation)
+    public int ActiveVideosCount => VideoQueue.Count(v => v.DownloadStatus.StartsWith("Downloading") || v.DownloadStatus == "Loading");
+    public int ActivePlaylistsCount => PlaylistQueue.Count(p => p.DownloadStatus.StartsWith("Downloading") || p.DownloadStatus == "Loading");
+
+    public bool HasActiveVideos => ActiveVideosCount > 0;
+    public bool HasActivePlaylists => ActivePlaylistsCount > 0;
+
     partial void OnManualUrlChanged(string value)
     {
         HasManualUrlText = !string.IsNullOrEmpty(value);
     }
 
+    partial void OnSelectedNavIndexChanged(int value)
+    {
+        CurrentTab = value switch
+        {
+            1 => "Videos",
+            2 => "Playlists",
+            _ => "Home"
+        };
+    }
+
     public MainViewModel()
     {
+        SetupQueueListeners();
+
         _clipboardService = new ClipboardService();
         _clipboardService.UrlDetected += OnUrlDetected;
         _clipboardService.Start();
+    }
+
+    private void SetupQueueListeners()
+    {
+        VideoQueue.CollectionChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(ActiveVideosCount));
+            OnPropertyChanged(nameof(HasActiveVideos));
+            if (e.NewItems != null)
+            {
+                foreach (VideoItem item in e.NewItems)
+                {
+                    item.PropertyChanged += OnItemPropertyChanged;
+                }
+            }
+            if (e.OldItems != null)
+            {
+                foreach (VideoItem item in e.OldItems)
+                {
+                    item.PropertyChanged -= OnItemPropertyChanged;
+                }
+            }
+        };
+
+        PlaylistQueue.CollectionChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(ActivePlaylistsCount));
+            OnPropertyChanged(nameof(HasActivePlaylists));
+            if (e.NewItems != null)
+            {
+                foreach (VideoItem item in e.NewItems)
+                {
+                    item.PropertyChanged += OnItemPropertyChanged;
+                }
+            }
+            if (e.OldItems != null)
+            {
+                foreach (VideoItem item in e.OldItems)
+                {
+                    item.PropertyChanged -= OnItemPropertyChanged;
+                }
+            }
+        };
+    }
+
+    private void OnItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(VideoItem.DownloadStatus))
+        {
+            OnPropertyChanged(nameof(ActiveVideosCount));
+            OnPropertyChanged(nameof(HasActiveVideos));
+            OnPropertyChanged(nameof(ActivePlaylistsCount));
+            OnPropertyChanged(nameof(HasActivePlaylists));
+        }
     }
 
     [RelayCommand]
@@ -64,7 +148,9 @@ public partial class MainViewModel : ViewModelBase
     {
         Dispatcher.UIThread.Post(() =>
         {
-            if (Downloads.Any(item => item.Url.Equals(url, StringComparison.OrdinalIgnoreCase)))
+            // Check duplicates in both queues
+            if (VideoQueue.Any(item => item.Url.Equals(url, StringComparison.OrdinalIgnoreCase)) ||
+                PlaylistQueue.Any(item => item.Url.Equals(url, StringComparison.OrdinalIgnoreCase)))
             {
                 ManualInputIconState = "Error";
                 ResetManualInputIconStateAfterDelay(2000);
@@ -79,11 +165,22 @@ public partial class MainViewModel : ViewModelBase
                 TargetFormat = "MP4 (Best)"
             };
 
-            Downloads.Add(newItem);
+            // Preliminary routing guess based on URL patterns
+            bool looksLikePlaylist = url.Contains("list=") && !url.Contains("v=");
+            if (looksLikePlaylist)
+            {
+                PlaylistQueue.Add(newItem);
+                SelectedNavIndex = 2; // Auto-focus playlist tab
+            }
+            else
+            {
+                VideoQueue.Add(newItem);
+                SelectedNavIndex = 1; // Auto-focus video tab
+            }
             
             Task.Run(async () =>
             {
-                bool success = await FetchMetadataAsync(newItem);
+                bool success = await FetchMetadataAndRouteAsync(newItem, looksLikePlaylist);
                 Dispatcher.UIThread.Post(() =>
                 {
                     if (success)
@@ -112,7 +209,7 @@ public partial class MainViewModel : ViewModelBase
         });
     }
 
-    private async Task<bool> FetchMetadataAsync(VideoItem item)
+    private async Task<bool> FetchMetadataAndRouteAsync(VideoItem item, bool placedInPlaylistQueue)
     {
         try
         {
@@ -135,7 +232,6 @@ public partial class MainViewModel : ViewModelBase
                         });
                     }
 
-                    // Download thumbnail for the playlist (first item)
                     Bitmap? pThumb = null;
                     if (metadata.PlaylistItems.Any() && !string.IsNullOrEmpty(metadata.PlaylistItems.First().ThumbnailUrl))
                     {
@@ -152,9 +248,16 @@ public partial class MainViewModel : ViewModelBase
                         item.FailedCount = 0;
                         item.Thumbnail = pThumb;
                         item.DownloadStatus = "Queued";
+
+                        // Reroute if initially placed in VideoQueue
+                        if (!placedInPlaylistQueue)
+                        {
+                            VideoQueue.Remove(item);
+                            PlaylistQueue.Add(item);
+                        }
                     });
 
-                    // Download individual thumbnails for children in background
+                    // Download children thumbnails
                     _ = Task.Run(async () =>
                     {
                         foreach (var child in childItems)
@@ -185,11 +288,18 @@ public partial class MainViewModel : ViewModelBase
                         item.Thumbnail = thumbnail;
                         item.IsPlaylist = false;
                         item.DownloadStatus = "Queued";
+
+                        // Reroute if initially placed in PlaylistQueue
+                        if (placedInPlaylistQueue)
+                        {
+                            PlaylistQueue.Remove(item);
+                            VideoQueue.Add(item);
+                        }
                     });
                 }
                 return true;
             }
-            throw new Exception("Metadata response was empty.");
+            throw new Exception("Metadata parsing failed.");
         }
         catch (Exception ex)
         {
@@ -358,21 +468,34 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task DownloadAllQueueAsync()
     {
-        var itemsToDownload = Downloads
-            .Where(i => i.DownloadStatus == "Queued" || i.DownloadStatus == "Failed")
-            .ToList();
-
-        if (!itemsToDownload.Any()) return;
-
-        var tasks = itemsToDownload.Select(DownloadAsync);
-        await Task.WhenAll(tasks);
+        if (CurrentTab == "Videos")
+        {
+            var queued = VideoQueue.Where(i => i.DownloadStatus == "Queued" || i.DownloadStatus == "Failed").ToList();
+            if (!queued.Any()) return;
+            var tasks = queued.Select(DownloadAsync);
+            await Task.WhenAll(tasks);
+        }
+        else if (CurrentTab == "Playlists")
+        {
+            var queued = PlaylistQueue.Where(i => i.DownloadStatus == "Queued" || i.DownloadStatus == "Failed").ToList();
+            if (!queued.Any()) return;
+            var tasks = queued.Select(DownloadAsync);
+            await Task.WhenAll(tasks);
+        }
     }
 
     [RelayCommand]
     private void Delete(VideoItem item)
     {
         Cancel(item);
-        Downloads.Remove(item);
+        if (VideoQueue.Contains(item))
+        {
+            VideoQueue.Remove(item);
+        }
+        else if (PlaylistQueue.Contains(item))
+        {
+            PlaylistQueue.Remove(item);
+        }
     }
 
     [RelayCommand]
@@ -387,7 +510,11 @@ public partial class MainViewModel : ViewModelBase
     public void StopServices()
     {
         _clipboardService.Stop();
-        foreach (var item in Downloads)
+        foreach (var item in VideoQueue)
+        {
+            Cancel(item);
+        }
+        foreach (var item in PlaylistQueue)
         {
             Cancel(item);
         }

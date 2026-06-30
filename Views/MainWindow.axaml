@@ -13,327 +13,524 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="BluJay YT Downloader"
         TransparencyLevelHint="AcrylicBlur"
-        Background="#14121214"
+        Background="#140F0E13"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1">
 
     <Window.Resources>
         <converters:StringEqualsConverter x:Key="StringEqualsConverter"/>
+        <LinearGradientBrush x:Key="AccentGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Offset="0.0" Color="#00F5A0"/>
+            <GradientStop Offset="1.0" Color="#00D9F6"/>
+        </LinearGradientBrush>
     </Window.Resources>
 
     <Panel>
-        <!-- Glassmorphism Backdrop Blur -->
+        <!-- Premium Glassmorphic Backdrop Blur -->
         <ExperimentalAcrylicBorder IsHitTestVisible="False">
             <ExperimentalAcrylicBorder.Material>
                 <ExperimentalAcrylicMaterial
                     BackgroundSource="Digger"
-                    TintColor="#121214"
-                    TintOpacity="0.85"
-                    MaterialOpacity="0.65"/>
+                    TintColor="#0F0E13"
+                    TintOpacity="0.9"
+                    MaterialOpacity="0.8"/>
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
 
-        <Grid RowDefinitions="Auto, *">
-            <!-- Header Strip & Manual Input -->
-            <Border Grid.Row="0" Background="#1C1A1E" Padding="20 25 20 15" BorderBrush="#2A2A2E" BorderThickness="0 0 0 1">
-                <StackPanel Spacing="16">
-                    <!-- Title Bar -->
-                    <Grid ColumnDefinitions="*, Auto">
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="BluJay YT Downloader" FontSize="20" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
-                            <Border Background="#10B981" CornerRadius="4" Padding="6 2" Margin="12 0 0 0" VerticalAlignment="Center">
-                                <TextBlock Text="Active" FontSize="11" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                            </Border>
-                        </StackPanel>
+        <Grid ColumnDefinitions="220, *">
+            <!-- Left Column: Sidebar (#0B0A0E) -->
+            <Border Grid.Column="0" Background="#0B0A0E" BorderBrush="#1C1B22" BorderThickness="0 0 1 0" Padding="0 30 0 20">
+                <Grid RowDefinitions="Auto, *, Auto">
+                    <!-- Logo Header -->
+                    <StackPanel Grid.Row="0" Margin="24 10 24 30" Spacing="8">
+                        <TextBlock Text="BLUJAY" Foreground="{StaticResource AccentGradient}" FontSize="24" FontWeight="Black" LetterSpacing="3"/>
+                        <TextBlock Text="Downloader Core" Foreground="#5E5C6E" FontSize="11" FontWeight="Medium" LetterSpacing="1"/>
+                    </StackPanel>
 
-                        <Button Grid.Column="1" 
-                                Content="Download All Queue" 
-                                Command="{Binding DownloadAllQueueCommand}"
-                                Background="#10B981" 
-                                Foreground="#FFFFFF" 
-                                FontWeight="Bold" 
-                                FontSize="13"
-                                Padding="16 8" 
-                                CornerRadius="6"
-                                Cursor="Hand">
-                            <Button.Styles>
-                                <Style Selector="Button:pointerover /template/ ContentPresenter">
-                                    <Setter Property="Background" Value="#059669"/>
-                                    <Setter Property="TextBlock.Foreground" Value="#FFFFFF"/>
-                                </Style>
-                            </Button.Styles>
-                        </Button>
-                    </Grid>
-
-                    <!-- Manual Input Area -->
-                    <Grid ColumnDefinitions="*, Auto">
-                        <Panel Grid.Column="0">
-                            <TextBox Text="{Binding ManualUrl, Mode=TwoWay}" 
-                                     Watermark="Paste YouTube Video or Playlist Link Here..."
-                                     Background="#121214"
-                                     Foreground="#FFFFFF"
-                                     BorderBrush="#2A2A2E"
-                                     BorderThickness="1 1 0 1"
-                                     CornerRadius="6 0 0 6"
-                                     Padding="12 10"
-                                     VerticalAlignment="Center"/>
-                            <Button Command="{Binding ClearManualUrlCommand}"
-                                    Content="✕"
-                                    Background="Transparent"
-                                    Foreground="#9CA3AF"
-                                    Padding="8"
-                                    Margin="0 0 10 0"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Center"
-                                    IsVisible="{Binding HasManualUrlText}"
-                                    Cursor="Hand"/>
-                        </Panel>
+                    <!-- Navigation Links -->
+                    <ListBox Grid.Row="1" 
+                             SelectedIndex="{Binding SelectedNavIndex, Mode=TwoWay}"
+                             Background="Transparent" 
+                             BorderThickness="0"
+                             SelectionMode="Single">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="#9CA3AF"/>
+                                <Setter Property="Padding" Value="16 12"/>
+                                <Setter Property="CornerRadius" Value="6"/>
+                                <Setter Property="Margin" Value="12 4"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Setter Property="Template">
+                                    <ControlTemplate>
+                                        <Border Background="{TemplateBinding Background}" 
+                                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                                CornerRadius="{TemplateBinding CornerRadius}"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter Content="{TemplateBinding Content}"
+                                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter>
+                            </Style>
+                            <Style Selector="ListBoxItem:pointerover /template/ Border">
+                                <Setter Property="Background" Value="#1AFFFFFF"/>
+                                <Setter Property="TextBlock.Foreground" Value="#F3F4F6"/>
+                            </Style>
+                            <Style Selector="ListBoxItem:selected /template/ Border">
+                                <Setter Property="Background" Value="#25232F"/>
+                                <Setter Property="TextBlock.Foreground" Value="#00F5A0"/>
+                                <Setter Property="BorderBrush" Value="#00F5A0"/>
+                                <Setter Property="BorderThickness" Value="3 0 0 0"/>
+                            </Style>
+                        </ListBox.Styles>
                         
-                        <Button Grid.Column="1"
-                                Command="{Binding AddUrlCommand}"
-                                Background="#10B981"
-                                Foreground="#FFFFFF"
-                                CornerRadius="0 6 6 0"
-                                Padding="16 10"
-                                VerticalAlignment="Center"
-                                Height="36"
-                                Width="60"
-                                Cursor="Hand">
-                            <Panel>
-                                <Path Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" 
-                                      Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform"
-                                      IsVisible="{Binding ManualInputIconState, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Idle}"/>
-                                <Path Data="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" 
-                                      Stroke="#FFFFFF" StrokeThickness="2" StrokeLineCap="Round" Width="14" Height="14" Stretch="Uniform"
-                                      IsVisible="{Binding ManualInputIconState, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Parsing}"/>
-                                <Path Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" 
-                                      Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform"
-                                      IsVisible="{Binding ManualInputIconState, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Success}"/>
-                                <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" 
-                                      Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform"
-                                      IsVisible="{Binding ManualInputIconState, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Error}"/>
-                            </Panel>
-                        </Button>
-                    </Grid>
-                </StackPanel>
+                        <!-- Nav items list -->
+                        <ListBoxItem>
+                            <Grid ColumnDefinitions="Auto, *">
+                                <Path Grid.Column="0" Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" Fill="CurrentColor" Width="14" Height="14" Margin="0 0 10 0" Stretch="Uniform"/>
+                                <TextBlock Grid.Column="1" Text="Add URL" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </Grid>
+                        </ListBoxItem>
+                        <ListBoxItem>
+                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                <Path Grid.Column="0" Data="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" Fill="CurrentColor" Width="14" Height="14" Margin="0 0 10 0" Stretch="Uniform"/>
+                                <TextBlock Grid.Column="1" Text="Videos" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Border Grid.Column="2" 
+                                        Background="#2E2C38" 
+                                        CornerRadius="10" 
+                                        Padding="8 2" 
+                                        IsVisible="{Binding HasActiveVideos}"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ActiveVideosCount}" FontSize="10" FontWeight="Bold" Foreground="#00F5A0"/>
+                                </Border>
+                            </Grid>
+                        </ListBoxItem>
+                        <ListBoxItem>
+                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                <Path Grid.Column="0" Data="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" Fill="CurrentColor" Width="14" Height="14" Margin="0 0 10 0" Stretch="Uniform"/>
+                                <TextBlock Grid.Column="1" Text="Playlists" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Border Grid.Column="2" 
+                                        Background="#2E2C38" 
+                                        CornerRadius="10" 
+                                        Padding="8 2" 
+                                        IsVisible="{Binding HasActivePlaylists}"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ActivePlaylistsCount}" FontSize="10" FontWeight="Bold" Foreground="#00D9F6"/>
+                                </Border>
+                            </Grid>
+                        </ListBoxItem>
+                    </ListBox>
+
+                    <!-- Footer Status -->
+                    <StackPanel Grid.Row="2" Margin="24 10" Spacing="8">
+                        <TextBlock Text="CLIPBOARD MONITOR" Foreground="#5E5C6E" FontSize="9" FontWeight="Bold" LetterSpacing="1"/>
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Ellipse Grid.Column="0" Width="8" Height="8" Fill="#00F5A0" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                            <TextBlock Grid.Column="1" Text="Monitoring clipboard" Foreground="#9CA3AF" FontSize="11" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
             </Border>
 
-            <!-- Scrollable Queue Container -->
-            <ScrollViewer Grid.Row="1" Padding="15" HorizontalScrollBarVisibility="Disabled">
-                <ListBox ItemsSource="{Binding Downloads}" Background="Transparent" BorderThickness="0" SelectionMode="Toggle">
-                    <ListBox.Styles>
-                        <Style Selector="ListBoxItem">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Padding" Value="0 4"/>
-                            <Setter Property="Template">
-                                <ControlTemplate>
-                                    <ContentPresenter Content="{TemplateBinding Content}"
-                                                      ContentTemplate="{TemplateBinding ContentTemplate}"/>
-                                </ControlTemplate>
-                            </Setter>
-                        </Style>
-                    </ListBox.Styles>
+            <!-- Right Column: Content area (#0F0E13) -->
+            <Border Grid.Column="1" Background="#0F0E13" Padding="30 20">
+                <Grid RowDefinitions="Auto, *">
+                    <!-- Title & Global Actions -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0 0 0 20">
+                        <TextBlock Text="{Binding CurrentTab}" FontSize="24" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                        
+                        <Button Grid.Column="1" 
+                                Content="Download All" 
+                                Command="{Binding DownloadAllQueueCommand}"
+                                Background="{StaticResource AccentGradient}" 
+                                Foreground="#0F0E13" 
+                                FontWeight="Bold" 
+                                FontSize="13"
+                                Padding="20 10" 
+                                CornerRadius="8"
+                                Cursor="Hand"
+                                IsVisible="{Binding CurrentTab, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Videos}"/>
+                        <Button Grid.Column="1" 
+                                Content="Download All" 
+                                Command="{Binding DownloadAllQueueCommand}"
+                                Background="{StaticResource AccentGradient}" 
+                                Foreground="#0F0E13" 
+                                FontWeight="Bold" 
+                                FontSize="13"
+                                Padding="20 10" 
+                                CornerRadius="8"
+                                Cursor="Hand"
+                                IsVisible="{Binding CurrentTab, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Playlists}"/>
+                    </Grid>
 
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="models:VideoItem">
-                            <Border CornerRadius="8" 
-                                    Padding="16" 
-                                    Margin="0 4" 
-                                    BorderThickness="1"
-                                    Classes.playlistCard="{Binding IsPlaylist}"
-                                    Classes.videoCard="{Binding !IsPlaylist}">
-                                <Border.Styles>
-                                    <Style Selector="Border.playlistCard">
-                                        <Setter Property="Background" Value="#1C1917"/>
-                                        <Setter Property="BorderBrush" Value="#37302B"/>
-                                    </Style>
-                                    <Style Selector="Border.videoCard">
-                                        <Setter Property="Background" Value="#1A1A1E"/>
-                                        <Setter Property="BorderBrush" Value="#2A2A2E"/>
-                                    </Style>
-                                </Border.Styles>
-                                
-                                <Grid RowDefinitions="Auto, Auto">
-                                    <!-- Row 0: Info Row -->
-                                    <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto, Auto">
-                                        <!-- Thumbnail Area -->
-                                        <Border Grid.Column="0" CornerRadius="6" ClipToBounds="True" Background="#121214" Width="120" Height="68" VerticalAlignment="Center">
-                                            <Panel>
-                                                <!-- If playlist and loading entries -->
-                                                <TextBlock Text="Folder" Foreground="#4B5563" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                           IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNull}}"/>
-                                                <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" 
-                                                       IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                            </Panel>
-                                        </Border>
+                    <!-- Nav Tab Switch Panels -->
+                    <Panel Grid.Row="1">
+                        
+                        <!-- TAB 1: HOME/ADD -->
+                        <Grid IsVisible="{Binding CurrentTab, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Home}"
+                              VerticalAlignment="Center" HorizontalAlignment="Center" Width="550" RowDefinitions="Auto, Auto">
+                            <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0 0 0 30" Spacing="8">
+                                <TextBlock Text="Start Downloading" FontSize="28" FontWeight="ExtraBold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Paste a YouTube video or playlist link below to parse details" Foreground="#9CA3AF" FontSize="14" HorizontalAlignment="Center"/>
+                            </StackPanel>
 
-                                        <!-- Metadata Info -->
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16 0" Spacing="4">
-                                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
-                                            
-                                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                                <!-- Icon folder for playlist vs normal duration -->
-                                                <Path Data="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
-                                                      Fill="#EAB308" Width="12" Height="12" Stretch="Uniform" IsVisible="{Binding IsPlaylist}"/>
-                                                
-                                                <TextBlock Text="{Binding Duration, StringFormat='Duration: {0}'}" FontSize="12" Foreground="#9CA3AF" IsVisible="{Binding !IsPlaylist}"/>
-                                                <TextBlock Text="{Binding TotalCount, StringFormat='{}{0} items'}" FontSize="12" Foreground="#9CA3AF" IsVisible="{Binding IsPlaylist}"/>
-                                                
-                                                <TextBlock Text="•" FontSize="12" Foreground="#4B5563"/>
-                                                
-                                                <!-- Status description -->
-                                                <TextBlock Text="{Binding DownloadStatus}" Foreground="{Binding StatusColor}" FontSize="12" FontWeight="Medium"/>
-                                            </StackPanel>
-
-                                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#EF4444" FontSize="11" TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis"
-                                                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                        </StackPanel>
-
-                                        <!-- Dropdown Format Selector -->
-                                        <ComboBox Grid.Column="2" 
-                                                  SelectedItem="{Binding TargetFormat}"
-                                                  Background="#121214"
-                                                  Foreground="#FFFFFF"
-                                                  BorderBrush="#2A2A2E"
-                                                  BorderThickness="1"
-                                                  CornerRadius="6"
-                                                  Width="180"
-                                                  Margin="0 0 16 0"
-                                                  VerticalAlignment="Center">
-                                            <ComboBox.Items>
-                                                <x:String>MP4 (Best)</x:String>
-                                                <x:String>MP4 (1080p)</x:String>
-                                                <x:String>MP4 (720p)</x:String>
-                                                <x:String>MP3 Audio (320kbps)</x:String>
-                                            </ComboBox.Items>
-                                        </ComboBox>
-
-                                        <!-- Actions & Expand Button -->
-                                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                            <!-- Expand/Collapse Button (Playlist only) -->
-                                            <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ToggleExpandCommand}"
-                                                    CommandParameter="{Binding}"
-                                                    Background="Transparent"
-                                                    Padding="8"
-                                                    Cursor="Hand"
-                                                    IsVisible="{Binding IsPlaylist}">
-                                                <Panel VerticalAlignment="Center">
-                                                    <Path Data="M7 10l5 5 5-5z" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform" IsVisible="{Binding !IsExpanded}"/>
-                                                    <Path Data="M7 14l5-5 5 5z" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform" IsVisible="{Binding IsExpanded}"/>
-                                                </Panel>
-                                            </Button>
-
-                                            <!-- Progress Display -->
-                                            <Panel Width="100" VerticalAlignment="Center" IsVisible="{Binding IsProcessing}">
-                                                <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#10B981" Background="#121214"/>
-                                                <TextBlock Text="{Binding Progress, StringFormat='{}{0:0}%'}" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 -14 0 0"/>
-                                            </Panel>
-
-                                            <!-- Download Action Button -->
-                                            <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DownloadCommand}" 
-                                                    CommandParameter="{Binding}"
-                                                    Background="#10B981" 
-                                                    Foreground="#FFFFFF"
-                                                    CornerRadius="6"
-                                                    Padding="8"
-                                                    Cursor="Hand"
-                                                    ToolTip.Tip="Download video or playlist"
-                                                    IsVisible="{Binding !IsProcessing}">
-                                                <Path Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform"/>
-                                            </Button>
-
-                                            <!-- Cancel Action Button -->
-                                            <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CancelCommand}" 
-                                                    CommandParameter="{Binding}"
-                                                    Background="#EF4444" 
-                                                    Foreground="#FFFFFF"
-                                                    CornerRadius="6"
-                                                    Padding="8"
-                                                    Cursor="Hand"
-                                                    ToolTip.Tip="Cancel active download"
-                                                    IsVisible="{Binding IsProcessing}">
-                                                <!-- Cancel Stop Symbol (Square) -->
-                                                <Path Data="M6 6h12v12H6z" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform"/>
-                                            </Button>
-
-                                            <!-- Delete Card Button -->
-                                            <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteCommand}" 
-                                                    CommandParameter="{Binding}"
-                                                    Background="#EF4444" 
-                                                    Foreground="#FFFFFF"
-                                                    CornerRadius="6"
-                                                    Padding="8"
-                                                    Cursor="Hand"
-                                                    ToolTip.Tip="Remove from list">
-                                                <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform"/>
-                                            </Button>
-                                        </StackPanel>
-                                    </Grid>
-
-                                    <!-- Row 1: Expandable Nested Children list -->
-                                    <Grid Grid.Row="1" ColumnDefinitions="Auto, *" Margin="0 12 0 0" IsVisible="{Binding IsExpanded}">
-                                        <!-- Visual timeline connection line -->
-                                        <Border Grid.Column="0" Width="36" VerticalAlignment="Stretch">
-                                            <Rectangle Width="2" Fill="#374151" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
-                                        </Border>
-
-                                        <!-- Nested child rows -->
-                                        <ItemsControl Grid.Column="1" ItemsSource="{Binding PlaylistItems}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate x:DataType="models:VideoItem">
-                                                    <Border Background="Transparent" Padding="0 6" BorderThickness="0">
-                                                        <Grid ColumnDefinitions="Auto, *, Auto, Auto">
-                                                            <!-- Small Thumbnail -->
-                                                            <Border Grid.Column="0" CornerRadius="4" ClipToBounds="True" Background="#121214" Width="60" Height="34" VerticalAlignment="Center">
-                                                                <Panel>
-                                                                    <TextBlock Text="No Image" Foreground="#4B5563" FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                               IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNull}}"/>
-                                                                    <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" 
-                                                                           IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                                                </Panel>
-                                                            </Border>
-
-                                                            <!-- Compact Row Text Metadata -->
-                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10 0" Spacing="2">
-                                                                <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Medium" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
-                                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                                    <TextBlock Text="{Binding Duration}" FontSize="10" Foreground="#9CA3AF"/>
-                                                                    <TextBlock Text="•" FontSize="10" Foreground="#4B5563"/>
-                                                                    <TextBlock Text="{Binding DownloadStatus}" Foreground="{Binding StatusColor}" FontSize="10" FontWeight="SemiBold"/>
-                                                                </StackPanel>
-                                                                <TextBlock Text="{Binding ErrorMessage}" Foreground="#EF4444" FontSize="9" TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis"
-                                                                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                                            </StackPanel>
-
-                                                            <!-- Small Progress representation -->
-                                                            <Panel Grid.Column="2" Width="60" Margin="0 0 10 0" VerticalAlignment="Center" IsVisible="{Binding IsProcessing}">
-                                                                <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="4" CornerRadius="2" Foreground="#10B981" Background="#121214"/>
-                                                            </Panel>
-
-                                                            <!-- Child deletion -->
-                                                            <Button Grid.Column="3"
-                                                                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteCommand}"
-                                                                    CommandParameter="{Binding}"
-                                                                    Background="Transparent"
-                                                                    Foreground="#EF4444"
-                                                                    Padding="4"
-                                                                    VerticalAlignment="Center"
-                                                                    Cursor="Hand"
-                                                                    ToolTip.Tip="Remove item">
-                                                                <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" Fill="#EF4444" Width="10" Height="10" Stretch="Uniform"/>
-                                                            </Button>
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Grid>
+                            <Border Grid.Row="1" Background="#18171F" CornerRadius="12" Padding="24" BorderBrush="#2E2C38" BorderThickness="1">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Panel Grid.Column="0">
+                                        <TextBox Text="{Binding ManualUrl, Mode=TwoWay}" 
+                                                 Watermark="Paste YouTube Video or Playlist Link Here..."
+                                                 Background="#0F0E13"
+                                                 Foreground="#FFFFFF"
+                                                 BorderBrush="#2E2C38"
+                                                 BorderThickness="1 1 0 1"
+                                                 CornerRadius="8 0 0 8"
+                                                 Padding="16 14"
+                                                 FontSize="13"
+                                                 VerticalAlignment="Center"/>
+                                        <Button Command="{Binding ClearManualUrlCommand}"
+                                                Content="✕"
+                                                Background="Transparent"
+                                                Foreground="#9CA3AF"
+                                                Padding="8"
+                                                Margin="0 0 12 0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                IsVisible="{Binding HasManualUrlText}"
+                                                Cursor="Hand"/>
+                                    </Panel>
+                                    
+                                    <Button Grid.Column="1"
+                                            Command="{Binding AddUrlCommand}"
+                                            Background="{StaticResource AccentGradient}"
+                                            Foreground="#0F0E13"
+                                            CornerRadius="0 8 8 0"
+                                            Padding="20 14"
+                                            VerticalAlignment="Center"
+                                            Height="46"
+                                            Width="70"
+                                            Cursor="Hand">
+                                        <Panel>
+                                            <Path Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" 
+                                                  Fill="#0B0A0E" Width="18" Height="18" Stretch="Uniform"
+                                                  IsVisible="{Binding ManualInputIconState, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Idle}"/>
+                                            <Path Data="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" 
+                                                  Stroke="#0B0A0E" StrokeThickness="2.5" StrokeLineCap="Round" Width="18" Height="18" Stretch="Uniform"
+                                                  IsVisible="{Binding ManualInputIconState, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Parsing}"/>
+                                            <Path Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" 
+                                                  Fill="#0B0A0E" Width="18" Height="18" Stretch="Uniform"
+                                                  IsVisible="{Binding ManualInputIconState, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Success}"/>
+                                            <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" 
+                                                  Fill="#0B0A0E" Width="18" Height="18" Stretch="Uniform"
+                                                  IsVisible="{Binding ManualInputIconState, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Error}"/>
+                                        </Panel>
+                                    </Button>
                                 </Grid>
                             </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </ScrollViewer>
+                        </Grid>
+
+                        <!-- TAB 2: VIDEOS -->
+                        <ScrollViewer IsVisible="{Binding CurrentTab, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Videos}"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <Panel>
+                                <TextBlock Text="No active single video downloads in queue." 
+                                           Foreground="#5E5C6E" FontSize="14" FontWeight="Medium"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 100 0 0"
+                                           IsVisible="{Binding !VideoQueue.Count}"/>
+                                
+                                <ListBox ItemsSource="{Binding VideoQueue}" Background="Transparent" BorderThickness="0">
+                                    <ListBox.Styles>
+                                        <Style Selector="ListBoxItem">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="Padding" Value="0 4"/>
+                                            <Setter Property="Template">
+                                                <ControlTemplate>
+                                                    <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                                </ControlTemplate>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.Styles>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="models:VideoItem">
+                                            <Border Background="#18171F" CornerRadius="8" Padding="16" Margin="0 4" BorderBrush="#2E2C38" BorderThickness="1">
+                                                <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                                                    <!-- Thumbnail -->
+                                                    <Border Grid.Column="0" CornerRadius="6" ClipToBounds="True" Background="#0F0E13" Width="120" Height="68" VerticalAlignment="Center">
+                                                        <Panel>
+                                                            <TextBlock Text="No Image" Foreground="#4B5563" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                       IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNull}}"/>
+                                                            <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" 
+                                                                   IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                        </Panel>
+                                                    </Border>
+
+                                                    <!-- Video details -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16 0" Spacing="4">
+                                                        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                                            <TextBlock Text="{Binding Duration, StringFormat='Duration: {0}'}" FontSize="12" Foreground="#9CA3AF"/>
+                                                            <TextBlock Text="•" FontSize="12" Foreground="#2E2C38"/>
+                                                            <TextBlock Text="{Binding DownloadStatus}" Foreground="{Binding StatusColor}" FontSize="12" FontWeight="Medium"/>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#EF4444" FontSize="11" TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis"
+                                                                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                    </StackPanel>
+
+                                                    <!-- Format dropdown -->
+                                                    <ComboBox Grid.Column="2" 
+                                                              SelectedItem="{Binding TargetFormat}"
+                                                              Background="#0F0E13"
+                                                              Foreground="#FFFFFF"
+                                                              BorderBrush="#2E2C38"
+                                                              BorderThickness="1"
+                                                              CornerRadius="6"
+                                                              Width="160"
+                                                              Margin="0 0 16 0"
+                                                              VerticalAlignment="Center">
+                                                        <ComboBox.Items>
+                                                            <x:String>MP4 (Best)</x:String>
+                                                            <x:String>MP4 (1080p)</x:String>
+                                                            <x:String>MP4 (720p)</x:String>
+                                                            <x:String>MP3 Audio (320kbps)</x:String>
+                                                        </ComboBox.Items>
+                                                    </ComboBox>
+
+                                                    <!-- Actions -->
+                                                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                        <Panel Width="100" VerticalAlignment="Center" IsVisible="{Binding IsProcessing}">
+                                                            <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#00F5A0" Background="#0F0E13"/>
+                                                            <TextBlock Text="{Binding Progress, StringFormat='{}{0:0}%'}" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 -14 0 0"/>
+                                                        </Panel>
+
+                                                        <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DownloadCommand}" 
+                                                                CommandParameter="{Binding}"
+                                                                Background="#2E2C38" 
+                                                                Foreground="#F3F4F6"
+                                                                CornerRadius="6"
+                                                                Padding="8"
+                                                                Cursor="Hand"
+                                                                ToolTip.Tip="Download video"
+                                                                IsVisible="{Binding !IsProcessing}">
+                                                            <Path Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" Fill="CurrentColor" Width="14" Height="14" Stretch="Uniform"/>
+                                                        </Button>
+
+                                                        <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CancelCommand}" 
+                                                                CommandParameter="{Binding}"
+                                                                Background="#EF4444" 
+                                                                Foreground="#FFFFFF"
+                                                                CornerRadius="6"
+                                                                Padding="8"
+                                                                Cursor="Hand"
+                                                                ToolTip.Tip="Cancel active download"
+                                                                IsVisible="{Binding IsProcessing}">
+                                                            <Path Data="M6 6h12v12H6z" Fill="CurrentColor" Width="14" Height="14" Stretch="Uniform"/>
+                                                        </Button>
+
+                                                        <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteCommand}" 
+                                                                CommandParameter="{Binding}"
+                                                                Background="#EF4444" 
+                                                                Foreground="#FFFFFF"
+                                                                CornerRadius="6"
+                                                                Padding="8"
+                                                                Cursor="Hand"
+                                                                ToolTip.Tip="Remove from list">
+                                                            <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" Fill="CurrentColor" Width="14" Height="14" Stretch="Uniform"/>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Panel>
+                        </ScrollViewer>
+
+                        <!-- TAB 3: PLAYLISTS -->
+                        <ScrollViewer IsVisible="{Binding CurrentTab, Converter={StaticResource StringEqualsConverter}, ConverterParameter=Playlists}"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <Panel>
+                                <TextBlock Text="No active playlist downloads in queue." 
+                                           Foreground="#5E5C6E" FontSize="14" FontWeight="Medium"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 100 0 0"
+                                           IsVisible="{Binding !PlaylistQueue.Count}"/>
+
+                                <ListBox ItemsSource="{Binding PlaylistQueue}" Background="Transparent" BorderThickness="0">
+                                    <ListBox.Styles>
+                                        <Style Selector="ListBoxItem">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="Padding" Value="0 4"/>
+                                            <Setter Property="Template">
+                                                <ControlTemplate>
+                                                    <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                                </ControlTemplate>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.Styles>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="models:VideoItem">
+                                            <Border Background="#1C1917" CornerRadius="8" Padding="16" Margin="0 4" BorderBrush="#37302B" BorderThickness="1">
+                                                <Grid RowDefinitions="Auto, Auto">
+                                                    <!-- Folder layout -->
+                                                    <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto, Auto">
+                                                        <Border Grid.Column="0" CornerRadius="6" ClipToBounds="True" Background="#0F0E13" Width="120" Height="68" VerticalAlignment="Center">
+                                                            <Panel>
+                                                                <TextBlock Text="Folder" Foreground="#4B5563" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                           IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNull}}"/>
+                                                                <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" 
+                                                                       IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                            </Panel>
+                                                        </Border>
+
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16 0" Spacing="4">
+                                                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                                <Path Data="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
+                                                                      Fill="#00D9F6" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="{Binding TotalCount, StringFormat='{}{0} items'}" FontSize="12" Foreground="#9CA3AF"/>
+                                                                <TextBlock Text="•" FontSize="12" Foreground="#2E2C38"/>
+                                                                <TextBlock Text="{Binding DownloadStatus}" Foreground="{Binding StatusColor}" FontSize="12" FontWeight="Medium"/>
+                                                            </StackPanel>
+                                                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#EF4444" FontSize="11" TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis"
+                                                                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                        </StackPanel>
+
+                                                        <ComboBox Grid.Column="2" 
+                                                                  SelectedItem="{Binding TargetFormat}"
+                                                                  Background="#0F0E13"
+                                                                  Foreground="#FFFFFF"
+                                                                  BorderBrush="#2E2C38"
+                                                                  BorderThickness="1"
+                                                                  CornerRadius="6"
+                                                                  Width="160"
+                                                                  Margin="0 0 16 0"
+                                                                  VerticalAlignment="Center">
+                                                            <ComboBox.Items>
+                                                                <x:String>MP4 (Best)</x:String>
+                                                                <x:String>MP4 (1080p)</x:String>
+                                                                <x:String>MP4 (720p)</x:String>
+                                                                <x:String>MP3 Audio (320kbps)</x:String>
+                                                            </ComboBox.Items>
+                                                        </ComboBox>
+
+                                                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                            <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ToggleExpandCommand}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="Transparent"
+                                                                    Padding="8"
+                                                                    Cursor="Hand">
+                                                                <Panel VerticalAlignment="Center">
+                                                                    <Path Data="M7 10l5 5 5-5z" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform" IsVisible="{Binding !IsExpanded}"/>
+                                                                    <Path Data="M7 14l5-5 5 5z" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform" IsVisible="{Binding IsExpanded}"/>
+                                                                </Panel>
+                                                            </Button>
+
+                                                            <Panel Width="100" VerticalAlignment="Center" IsVisible="{Binding IsProcessing}">
+                                                                <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="8" CornerRadius="4" Foreground="#00F5A0" Background="#0F0E13"/>
+                                                                <TextBlock Text="{Binding Progress, StringFormat='{}{0:0}%'}" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 -14 0 0"/>
+                                                            </Panel>
+
+                                                            <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DownloadCommand}" 
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="#2E2C38" 
+                                                                    Foreground="#F3F4F6"
+                                                                    CornerRadius="6"
+                                                                    Padding="8"
+                                                                    Cursor="Hand"
+                                                                    ToolTip.Tip="Download playlist"
+                                                                    IsVisible="{Binding !IsProcessing}">
+                                                                <Path Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" Fill="CurrentColor" Width="14" Height="14" Stretch="Uniform"/>
+                                                            </Button>
+
+                                                            <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CancelCommand}" 
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="#EF4444" 
+                                                                    Foreground="#FFFFFF"
+                                                                    CornerRadius="6"
+                                                                    Padding="8"
+                                                                    Cursor="Hand"
+                                                                    ToolTip.Tip="Cancel active download"
+                                                                    IsVisible="{Binding IsProcessing}">
+                                                                <Path Data="M6 6h12v12H6z" Fill="CurrentColor" Width="14" Height="14" Stretch="Uniform"/>
+                                                            </Button>
+
+                                                            <Button Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteCommand}" 
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="#EF4444" 
+                                                                    Foreground="#FFFFFF"
+                                                                    CornerRadius="6"
+                                                                    Padding="8"
+                                                                    Cursor="Hand"
+                                                                    ToolTip.Tip="Remove from list">
+                                                                <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" Fill="CurrentColor" Width="14" Height="14" Stretch="Uniform"/>
+                                                            </Button>
+                                                        </StackPanel>
+                                                    </Grid>
+
+                                                    <!-- Indented children -->
+                                                    <Grid Grid.Row="1" ColumnDefinitions="Auto, *" Margin="0 12 0 0" IsVisible="{Binding IsExpanded}">
+                                                        <Border Grid.Column="0" Width="36" VerticalAlignment="Stretch">
+                                                            <Rectangle Width="2" Fill="#374151" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                                                        </Border>
+
+                                                        <ItemsControl Grid.Column="1" ItemsSource="{Binding PlaylistItems}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:DataType="models:VideoItem">
+                                                                    <Border Background="Transparent" Padding="0 6" BorderThickness="0">
+                                                                        <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                                                                            <Border Grid.Column="0" CornerRadius="4" ClipToBounds="True" Background="#0F0E13" Width="60" Height="34" VerticalAlignment="Center">
+                                                                                <Panel>
+                                                                                    <TextBlock Text="No Image" Foreground="#4B5563" FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                                               IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNull}}"/>
+                                                                                    <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" 
+                                                                                           IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                                                </Panel>
+                                                                            </Border>
+
+                                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10 0" Spacing="2">
+                                                                                <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Medium" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                                                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                                    <TextBlock Text="{Binding Duration}" FontSize="10" Foreground="#9CA3AF"/>
+                                                                                    <TextBlock Text="•" FontSize="10" Foreground="#2E2C38"/>
+                                                                                    <TextBlock Text="{Binding DownloadStatus}" Foreground="{Binding StatusColor}" FontSize="10" FontWeight="SemiBold"/>
+                                                                                </StackPanel>
+                                                                                <TextBlock Text="{Binding ErrorMessage}" Foreground="#EF4444" FontSize="9" TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis"
+                                                                                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                                                            </StackPanel>
+
+                                                                            <Panel Grid.Column="2" Width="60" Margin="0 0 10 0" VerticalAlignment="Center" IsVisible="{Binding IsProcessing}">
+                                                                                <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" Height="4" CornerRadius="2" Foreground="#00F5A0" Background="#0F0E13"/>
+                                                                            </Panel>
+
+                                                                            <Button Grid.Column="3"
+                                                                                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteCommand}"
+                                                                                    CommandParameter="{Binding}"
+                                                                                    Background="Transparent"
+                                                                                    Foreground="#EF4444"
+                                                                                    Padding="4"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Cursor="Hand"
+                                                                                    ToolTip.Tip="Remove item">
+                                                                                <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" Fill="#EF4444" Width="10" Height="10" Stretch="Uniform"/>
+                                                                            </Button>
+                                                                        </Grid>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Panel>
+                        </ScrollViewer>
+
+                    </Panel>
+                </Grid>
+            </Border>
         </Grid>
     </Panel>
 </Window>
